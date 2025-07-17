@@ -10,11 +10,12 @@ import (
 	"time"
 
 	"github.com/bookiu/gopkg/pkg/util/types"
+	"github.com/google/go-querystring/query"
 )
 
 type Client interface {
 	Do(ctx context.Context, req *http.Request, result interface{}) error
-	Get(ctx context.Context, url string, result interface{}) error
+	Get(ctx context.Context, url string, query interface{}, result interface{}) error
 	Post(ctx context.Context, url string, contentType string, body interface{}, result interface{}) error
 	PostJson(ctx context.Context, url string, body interface{}, result interface{}) error
 }
@@ -63,8 +64,17 @@ func (c *HTTPClient) Do(ctx context.Context, req *http.Request, result interface
 	return c.config.Response.Handle(resp, result)
 }
 
-func (c *HTTPClient) Get(ctx context.Context, url string, result interface{}) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+func (c *HTTPClient) Get(ctx context.Context, url string, q interface{}, result interface{}) error {
+	finalUrl := url
+	if q != nil {
+		v, err := query.Values(q)
+		if err != nil {
+			return err
+		}
+		finalUrl = url + "?" + v.Encode()
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, finalUrl, nil)
 	if err != nil {
 		return err
 	}

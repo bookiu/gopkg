@@ -17,7 +17,7 @@ func TestHTTPClient(t *testing.T) {
 	})
 
 	var resp headersResponse
-	err := client.Get(context.Background(), "https://httpbin.dev/headers", &resp)
+	err := client.Get(context.Background(), "https://httpbin.dev/headers", nil, &resp)
 	if err != nil {
 		t.Fatal("Request to httpbin failed. ", err)
 	}
@@ -38,13 +38,33 @@ func TestAuthWithBearerToken(t *testing.T) {
 	})
 
 	var resp headersResponse
-	err := client.Get(context.Background(), "https://httpbin.dev/headers", &resp)
+	err := client.Get(context.Background(), "https://httpbin.dev/headers", nil, &resp)
 	if err != nil {
 		t.Fatal("Request to httpbin failed. ", err)
 	}
 
 	if resp.Headers["Authorization"][0] != "Bearer "+token {
 		t.Fatal("Authorization header not match. ", resp.Headers["Authorization"])
+	}
+}
+
+func TestGetWithQuery(t *testing.T) {
+	client := NewHTTPClient(&Config{
+		Timeout:  time.Second * 5,
+		Response: &DirectResponseHandler{},
+	})
+	q := struct {
+		Name string `url:"name"`
+		Sex  string `url:"sex"`
+	}{
+		Name: "abcd",
+		Sex:  "male",
+	}
+
+	var resp headersResponse
+	err := client.Get(context.Background(), "https://httpbin.dev/response-headers", &q, &resp)
+	if err != nil {
+		t.Fatal("Request to httpbin failed. ", err)
 	}
 }
 
@@ -61,7 +81,7 @@ func TestAuthWithAPIKey(t *testing.T) {
 	})
 
 	var resp headersResponse
-	err := client.Get(context.Background(), "https://httpbin.dev/headers", &resp)
+	err := client.Get(context.Background(), "https://httpbin.dev/headers", nil, &resp)
 	if err != nil {
 		t.Fatal("Request to httpbin failed. ", err)
 	}

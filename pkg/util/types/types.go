@@ -1,8 +1,10 @@
 package types
 
-import "reflect"
+import (
+	"reflect"
+)
 
-func IsStruct(v interface{}) bool {
+func IsStruct(v any) bool {
 	val := reflect.ValueOf(v)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
