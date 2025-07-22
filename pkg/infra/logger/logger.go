@@ -16,6 +16,7 @@ var (
 func InitializeLogger(logLevel *string, logFile *string) {
 	level := parseLogLevel(logLevel)
 	file := parseLogFile(logFile)
+	fmt.Printf("Initialize logger. level=%s, file=%s\n", level, file)
 
 	cfg := zap.Config{
 		Level:            zap.NewAtomicLevelAt(level),
@@ -39,7 +40,7 @@ func parseLogLevel(logLevel *string) zapcore.Level {
 	if logLevelFromEnv != "" {
 		logLevel = &logLevelFromEnv
 	}
-	if logLevel != nil {
+	if logLevel != nil && *logLevel != "" {
 		var err error
 		level, err = zapcore.ParseLevel(*logLevel)
 		if err != nil {
@@ -57,15 +58,17 @@ func parseLogFile(logFile *string) string {
 	if logFileFromEnv != "" {
 		logFile = &logFileFromEnv
 	}
-	if logFile != nil {
-		if *logFile == "/dev/stdout" || *logFile == "stdout" {
+	if logFile != nil && *logFile != "" {
+		switch *logFile {
+		case "/dev/stdout", "stdout":
 			file = "stdout"
-		} else if *logFile == "/dev/stderr" || *logFile == "stderr" {
+		case "/dev/stderr", "stderr":
 			file = "stderr"
-		} else {
+		default:
 			file = *logFile
 		}
 	}
+
 	return file
 }
 
