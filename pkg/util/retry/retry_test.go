@@ -9,7 +9,7 @@ import (
 
 func TestRetry(t *testing.T) {
 	data := 0
-	err := Retry(context.Background(), func() error {
+	err, _ := Retry(context.Background(), func() error {
 		data++
 		return nil
 	}, 3)
@@ -23,7 +23,7 @@ func TestRetry(t *testing.T) {
 
 func TestRetry02(t *testing.T) {
 	data := 0
-	err := Retry(context.Background(), func() error {
+	err, _ := Retry(context.Background(), func() error {
 		data++
 		if data < 2 {
 			return errors.New("retry")
@@ -40,7 +40,7 @@ func TestRetry02(t *testing.T) {
 
 func TestRetry03(t *testing.T) {
 	data := 0
-	err := Retry(context.Background(), func() error {
+	err, _ := Retry(context.Background(), func() error {
 		data++
 		if data < 4 {
 			return errors.New("retry")
@@ -60,7 +60,7 @@ func TestRetry04(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*18)
 	defer cancel()
 
-	err := Retry(ctx, func() error {
+	err, _ := Retry(ctx, func() error {
 		data++
 		time.Sleep(time.Millisecond * 10)
 		return errors.New("retry")
@@ -81,7 +81,7 @@ func TestRetry05(t *testing.T) {
 		cancel()
 	}()
 
-	err := Retry(ctx, func() error {
+	err, _ := Retry(ctx, func() error {
 		data++
 		time.Sleep(time.Millisecond * 10)
 		return errors.New("retry")
@@ -97,7 +97,7 @@ func TestRetry05(t *testing.T) {
 func TestRetry06(t *testing.T) {
 	data := 0
 
-	err := Retry(context.Background(), func() error {
+	err, _ := Retry(context.Background(), func() error {
 		data++
 		return context.Canceled
 	}, 3)
@@ -112,7 +112,7 @@ func TestRetry06(t *testing.T) {
 func TestRetry07(t *testing.T) {
 	data := 0
 
-	err := Retry(context.Background(), func() error {
+	err, _ := Retry(context.Background(), func() error {
 		data++
 		return context.DeadlineExceeded
 	}, 3)
