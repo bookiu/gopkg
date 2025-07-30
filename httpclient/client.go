@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bookiu/gopkg/pkg/util/types"
+	"github.com/bookiu/gopkg/util/types"
 	"github.com/google/go-querystring/query"
 )
 

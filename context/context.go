@@ -3,7 +3,7 @@ package context
 import (
 	stdctx "context"
 
-	"github.com/bookiu/gopkg/pkg/infra/logger"
+	"github.com/bookiu/gopkg/infra/logger"
 	"go.uber.org/zap"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	pkgctx "github.com/bookiu/gopkg/pkg/context"
+	pkgctx "github.com/bookiu/gopkg/context"
 	"go.uber.org/zap"
 )
 
