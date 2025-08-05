@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/bookiu/gopkg/util/types"
@@ -21,9 +22,11 @@ type Client interface {
 }
 
 type Config struct {
-	Timeout  time.Duration
-	Response ResponseHandler
+	Timeout   time.Duration
+	ProxyFunc func(*http.Request) (*url.URL, error)
+
 	Auth     AuthProvider
+	Response ResponseHandler
 	Observe  ObserveProvider
 }
 
@@ -44,6 +47,9 @@ func NewHTTPClient(config *Config) *HTTPClient {
 		config: config,
 		client: &http.Client{
 			Timeout: config.Timeout,
+			Transport: &http.Transport{
+				Proxy: config.ProxyFunc,
+			},
 		},
 	}
 }
