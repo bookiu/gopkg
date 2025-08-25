@@ -16,9 +16,9 @@ import (
 
 type Client interface {
 	Do(ctx context.Context, req *http.Request, result interface{}) error
-	Get(ctx context.Context, url string, query interface{}, result interface{}) error
-	Post(ctx context.Context, url string, contentType string, body interface{}, result interface{}) error
-	PostJson(ctx context.Context, url string, body interface{}, result interface{}) error
+	Get(ctx context.Context, url string, query interface{}, result interface{}, opts ...RequestOption) error
+	Post(ctx context.Context, url string, body interface{}, result interface{}, opts ...RequestOption) error
+	PostJson(ctx context.Context, url string, body interface{}, result interface{}, opts ...RequestOption) error
 }
 
 type Config struct {
@@ -28,6 +28,46 @@ type Config struct {
 	Auth     AuthProvider
 	Response ResponseHandler
 	Observe  ObserveProvider
+}
+
+// RequestOption 定义用于配置请求的函数选项类型
+type RequestOption func(*http.Request)
+
+// WithHeader 设置单个请求头
+func WithHeader(key, value string) RequestOption {
+	return func(req *http.Request) {
+		req.Header.Set(key, value)
+	}
+}
+
+// WithHeaders 设置多个请求头
+func WithHeaders(headers map[string]string) RequestOption {
+	return func(req *http.Request) {
+		for key, value := range headers {
+			req.Header.Set(key, value)
+		}
+	}
+}
+
+// WithContentType 设置 Content-Type 头
+func WithContentType(contentType string) RequestOption {
+	return func(req *http.Request) {
+		req.Header.Set("Content-Type", contentType)
+	}
+}
+
+// WithBearerToken 设置 Bearer Token 认证头
+func WithBearerToken(token string) RequestOption {
+	return func(req *http.Request) {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+}
+
+// WithUserAgent 设置 User-Agent 头
+func WithUserAgent(userAgent string) RequestOption {
+	return func(req *http.Request) {
+		req.Header.Set("User-Agent", userAgent)
+	}
 }
 
 type HTTPClient struct {
@@ -70,7 +110,7 @@ func (c *HTTPClient) Do(ctx context.Context, req *http.Request, result interface
 	return c.config.Response.Handle(resp, result)
 }
 
-func (c *HTTPClient) Get(ctx context.Context, url string, q interface{}, result interface{}) error {
+func (c *HTTPClient) Get(ctx context.Context, url string, q interface{}, result interface{}, opts ...RequestOption) error {
 	finalUrl := url
 	if q != nil {
 		v, err := query.Values(q)
@@ -84,10 +124,15 @@ func (c *HTTPClient) Get(ctx context.Context, url string, q interface{}, result 
 	if err != nil {
 		return err
 	}
+
+	for _, opt := range opts {
+		opt(req)
+	}
+
 	return c.Do(ctx, req, result)
 }
 
-func (c *HTTPClient) Post(ctx context.Context, url string, contentType string, body interface{}, result interface{}) error {
+func (c *HTTPClient) Post(ctx context.Context, url string, body interface{}, result interface{}, opts ...RequestOption) error {
 	payload, err := packBody(body)
 	if err != nil {
 		return err
@@ -96,12 +141,16 @@ func (c *HTTPClient) Post(ctx context.Context, url string, contentType string, b
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", contentType)
+
+	for _, opt := range opts {
+		opt(req)
+	}
 	return c.Do(ctx, req, result)
 }
 
-func (c *HTTPClient) PostJson(ctx context.Context, url string, body interface{}, result interface{}) error {
-	return c.Post(ctx, url, "application/json", body, result)
+func (c *HTTPClient) PostJson(ctx context.Context, url string, body interface{}, result interface{}, opts ...RequestOption) error {
+	opts = append(opts, WithContentType("application/json"))
+	return c.Post(ctx, url, body, result, opts...)
 }
 
 func packBody(body interface{}) (io.Reader, error) {
