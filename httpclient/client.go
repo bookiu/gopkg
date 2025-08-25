@@ -101,10 +101,11 @@ func (c *HTTPClient) Do(ctx context.Context, req *http.Request, result interface
 
 	startTime := time.Now()
 	resp, err := c.client.Do(req.WithContext(ctx))
-	c.config.Observe.RecordRequest(ctx, req.Method, req.URL.String(), resp.StatusCode, time.Since(startTime), err)
 	if err != nil {
+		c.config.Observe.RecordRequest(ctx, req.Method, req.URL.String(), 0, time.Since(startTime), err)
 		return err
 	}
+	c.config.Observe.RecordRequest(ctx, req.Method, req.URL.String(), resp.StatusCode, time.Since(startTime), err)
 
 	defer resp.Body.Close()
 	return c.config.Response.Handle(resp, result)
