@@ -85,7 +85,7 @@ func parseLogFile(logFile *string) string {
 	return file
 }
 
-// GetLogger
+// GetLogger get global logger instance.
 func GetLogger() *zap.Logger {
 	if log == nil {
 		InitializeLogger(nil, nil)

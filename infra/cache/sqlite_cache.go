@@ -45,7 +45,7 @@ func NewSqliteCache(dbPath string) (*SqliteCache, error) {
 }
 
 // Set 将一个键值对和 TTL 添加到缓存中。
-func (c *SqliteCache) Set(ctx context.Context, key string, value string, ttl time.Duration) error {
+func (c *SqliteCache) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
 	var expiresAt int64
 	if ttl > 0 {
 		expiresAt = time.Now().Add(ttl).Unix()
@@ -60,7 +60,7 @@ func (c *SqliteCache) Set(ctx context.Context, key string, value string, ttl tim
 
 // Get 通过键从缓存中检索值。
 // 如果键不存在或已过期，将返回错误。
-func (c *SqliteCache) Get(ctx context.Context, key string) (string, error) {
+func (c *SqliteCache) Get(ctx context.Context, key string) (any, error) {
 	var value string
 	var expiresAt int64
 
@@ -71,7 +71,7 @@ func (c *SqliteCache) Get(ctx context.Context, key string) (string, error) {
 	err := row.Scan(&value, &expiresAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", ErrKeyNotFound
+			return "", &KeyNotExistsError{Key: key}
 		}
 		return "", err // sql.ErrNoRows 是这里的常见错误
 	}
@@ -80,7 +80,7 @@ func (c *SqliteCache) Get(ctx context.Context, key string) (string, error) {
 	if expiresAt != 0 && time.Now().Unix() > expiresAt {
 		// 键已过期，删除它并返回未找到
 		_ = c.Del(ctx, key) // 尽力而为地删除
-		return "", ErrKeyNotFound
+		return "", &KeyNotExistsError{Key: key}
 	}
 
 	return value, nil
@@ -121,7 +121,7 @@ func (c *SqliteCache) Has(ctx context.Context, key string) (bool, error) {
 
 // SetWithFunc 尝试获取一个键，如果不存在，则调用函数，
 // 设置缓存，并返回结果。
-func (c *SqliteCache) SetWithFunc(ctx context.Context, key string, fn func() (string, error), ttl time.Duration) (string, error) {
+func (c *SqliteCache) SetWithFunc(ctx context.Context, key string, fn func() (any, error), ttl time.Duration) (any, error) {
 	// 缓存中没有，调用函数
 	val, err := fn()
 	if err != nil {
