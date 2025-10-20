@@ -57,7 +57,11 @@ func (c *localCache) Get(ctx context.Context, key string) (any, error) {
 		return nil, &KeyNotExistsError{Key: key}
 	}
 
-	return c.deserialize(key, e.Value), nil
+	deserialized, err := c.deserialize(key, e.Value)
+	if err != nil {
+		return nil, err
+	}
+	return deserialized, nil
 }
 
 // Set stores a value in cache with custom TTL
@@ -101,7 +105,7 @@ func (c *localCache) SetWithFunc(ctx context.Context, key string, fn func() (any
 }
 
 func (c *localCache) serialize(key string, value any) ([]byte, error) {
-	if c.serializer == nil || c.serializer.Serialize == nil {
+	if c.serializer == nil {
 		if v, ok := value.([]byte); ok {
 			return v, nil
 		}
@@ -112,7 +116,7 @@ func (c *localCache) serialize(key string, value any) ([]byte, error) {
 }
 
 func (c *localCache) deserialize(key string, data any) (any, error) {
-	if c.serializer == nil || c.serializer.Deserialize == nil {
+	if c.serializer == nil {
 		return data, nil
 	}
 	return c.serializer.Deserialize(key, data)
