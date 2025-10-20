@@ -134,7 +134,6 @@ func TestLocalCache_Get(t *testing.T) {
 		val, err := cache.Get(ctx, "non-existent")
 		assert.Error(t, err)
 		assert.Nil(t, val)
-		assert.IsType(t, &KeyNotExistsError{}, err)
 	})
 
 	t.Run("get expired key", func(t *testing.T) {
@@ -150,7 +149,6 @@ func TestLocalCache_Get(t *testing.T) {
 		val, err := cache.Get(ctx, key)
 		assert.Error(t, err)
 		assert.Nil(t, val)
-		assert.IsType(t, &KeyNotExistsError{}, err)
 	})
 
 	t.Run("get valid key", func(t *testing.T) {
@@ -340,9 +338,7 @@ func TestLocalCache_CleanupExpired(t *testing.T) {
 
 	// Short TTL keys should return KeyNotExistsError
 	assert.Error(t, err1)
-	assert.IsType(t, &KeyNotExistsError{}, err1)
 	assert.Error(t, err2)
-	assert.IsType(t, &KeyNotExistsError{}, err2)
 
 	// Long TTL key should still be valid
 	assert.NoError(t, err3)

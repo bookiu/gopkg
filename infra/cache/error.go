@@ -1,9 +1,12 @@
 package cache
 
-type KeyNotExistsError struct {
-	Key string
-}
+import (
+	"errors"
+	"fmt"
+)
 
-func (e *KeyNotExistsError) Error() string {
-	return "cache key " + e.Key + " not exists"
+var KeyNotExistsError = errors.New("cache key not exists")
+
+func newKeyNotExistsError(k string) error {
+	return fmt.Errorf("%w. key=%s", KeyNotExistsError, k)
 }

@@ -71,7 +71,7 @@ func (c *SqliteCache) Get(ctx context.Context, key string) (any, error) {
 	err := row.Scan(&value, &expiresAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", &KeyNotExistsError{Key: key}
+			return "", newKeyNotExistsError(key)
 		}
 		return "", err // sql.ErrNoRows 是这里的常见错误
 	}
@@ -80,7 +80,7 @@ func (c *SqliteCache) Get(ctx context.Context, key string) (any, error) {
 	if expiresAt != 0 && time.Now().Unix() > expiresAt {
 		// 键已过期，删除它并返回未找到
 		_ = c.Del(ctx, key) // 尽力而为地删除
-		return "", &KeyNotExistsError{Key: key}
+		return "", newKeyNotExistsError(key)
 	}
 
 	return value, nil

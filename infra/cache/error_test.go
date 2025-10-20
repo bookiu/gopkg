@@ -15,25 +15,23 @@ func TestKeyNotExistsError_Error(t *testing.T) {
 		{
 			name: "normal key",
 			key:  "test-key",
-			want: "cache key test-key not exists",
+			want: "cache key not exists. key=test-key",
 		},
 		{
 			name: "empty key",
 			key:  "",
-			want: "cache key  not exists",
+			want: "cache key not exists. key=",
 		},
 		{
 			name: "key with special characters",
 			key:  "test:key:123",
-			want: "cache key test:key:123 not exists",
+			want: "cache key not exists. key=test:key:123",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := &KeyNotExistsError{
-				Key: tt.key,
-			}
+			e := newKeyNotExistsError(tt.key)
 			assert.Equal(t, tt.want, e.Error())
 		})
 	}

@@ -45,16 +45,14 @@ func (c *localCache) Del(ctx context.Context, key string) error {
 func (c *localCache) Get(ctx context.Context, key string) (any, error) {
 	val, exists := c.store.Load(key)
 	if !exists {
-		return nil, &KeyNotExistsError{
-			Key: key,
-		}
+		return nil, newKeyNotExistsError(key)
 	}
 	e := val.(*entry)
 
 	// Check if entry has expired
 	if time.Now().After(e.ExpireTime) {
 		_ = c.Del(ctx, key)
-		return nil, &KeyNotExistsError{Key: key}
+		return nil, newKeyNotExistsError(key)
 	}
 
 	deserialized, err := c.deserialize(key, e.Value)

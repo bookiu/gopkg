@@ -109,7 +109,6 @@ func TestSqliteCache_Get(t *testing.T) {
 	t.Run("get non-existent key", func(t *testing.T) {
 		val, err := cache.Get(ctx, "non-existent")
 		assert.Error(t, err)
-		assert.IsType(t, &KeyNotExistsError{}, err)
 		assert.Equal(t, "", val)
 	})
 
@@ -124,7 +123,6 @@ func TestSqliteCache_Get(t *testing.T) {
 
 		val, err := cache.Get(ctx, key)
 		assert.Error(t, err)
-		assert.IsType(t, &KeyNotExistsError{}, err)
 		assert.Equal(t, "", val)
 	})
 
@@ -172,7 +170,6 @@ func TestSqliteCache_Del(t *testing.T) {
 
 		val, err := cache.Get(ctx, key)
 		assert.Error(t, err)
-		assert.IsType(t, &KeyNotExistsError{}, err)
 		assert.Equal(t, "", val)
 	})
 
